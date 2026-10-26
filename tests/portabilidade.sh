@@ -9,7 +9,10 @@
 # os scripts encontram numa máquina sem o bash do Homebrew. Nada de bash 4 aqui.
 set -uo pipefail
 raiz=$(cd "$(dirname "$0")/.." && pwd)
-tmp=$(mktemp -d)
+# Caminho físico: no macOS o mktemp devolve /var/folders/..., link para /private/var. O lib.py
+# resolve links (lib.HERE) e o ps mostra o caminho como foi chamado; num projeto de verdade, sob o
+# home, os dois coincidem, e o teste tem de reproduzir isso, não o link do /var.
+tmp=$(cd "$(mktemp -d)" && pwd -P)
 trap 'kill $(jobs -p) 2>/dev/null; rm -rf "$tmp"' EXIT
 falhas=0
 ok () { echo "ok    $*"; }
