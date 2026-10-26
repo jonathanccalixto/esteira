@@ -30,7 +30,7 @@ git push -q origin "HEAD:$branch"
 sha=$(git rev-parse HEAD)
 for f in "$@"; do
   b=$(basename "$f"); alt=${b%.*}; alt=${alt//-/ }
-  case ${b,,} in
+  case $(printf '%s' "$b" | tr '[:upper:]' '[:lower:]') in   # not ${b,,}: bash 3.2 (macOS) lacks it
     *.png|*.jpg|*.jpeg|*.gif|*.webp|*.svg) echo "![${alt}](https://raw.githubusercontent.com/$repo/$sha/$dest/$b)" ;;
     *) echo "[${b}](https://github.com/$repo/blob/$sha/$dest/$b)" ;;
   esac
