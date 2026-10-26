@@ -68,8 +68,9 @@ WT=$($BIN/worktree.sh qa <N> --detach) && cd "$WT" && gh pr checkout <PR>
   `--label esteira.issue=<N>`. Veja [dev e local](references/ambiente-dev-e-local.md) e
   [dublês](references/dubles-de-integracoes.md) para integrações externas (`scripts/qa_local.py`).
 - **Nada na tela do usuário.** Navegador e app rodam num display próprio:
-  `$SK/scripts/chrome-limpo.sh subir $G <url>` (Xephyr + Chrome limpo por CDP). App desktop: Xvfb ou
-  Xephyr. Android: emulador `-no-window`.
+  `$SK/scripts/chrome-limpo.sh subir $G <url>` (Xephyr + Chrome limpo por CDP; no macOS, Chrome
+  headless, e a tomada muda como em [vídeo web](references/video-web.md#macos-chrome-headless)).
+  App desktop: Xvfb ou Xephyr. Android: emulador `-no-window`.
 - Recurso que só cabe um por vez (o display de gravação, um emulador, uma porta fixa) vai sob
   `$BIN/lock.sh <nome> bash $G/run.sh`. **Prazo de 40 min por sessão** (`$BIN/prazo.sh 2400`); vencido, os
   casos que faltaram ficam `NAO_EXECUTADO` com o motivo.
