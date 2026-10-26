@@ -117,6 +117,26 @@ que só entram quando o comando do sistema não existe. O que muda em relação 
 Esses caminhos foram exercitados simulando o macOS num Linux; se algo não se comportar como
 descrito num Mac de verdade, abra uma issue com a saída do comando.
 
+### Python e Node pelos versionadores (recomendado)
+
+Os pacotes do sistema servem, mas a sugestão é instalar o Python e o Node pelo
+[pyenv](https://github.com/pyenv/pyenv) e pelo [nvm](https://github.com/nvm-sh/nvm): dá para ter a
+versão que a esteira pede sem depender da distro nem do Python do Xcode, e sem um segundo Python ou
+Node do sistema sobrando.
+
+```bash
+pyenv install 3.12 && pyenv global 3.12      # Python 3.10+
+nvm install 20 && nvm alias default 20       # Node 18+ (só para o vídeo do QA)
+```
+
+Para a esteira é transparente: ela usa o `python3` e o `node` que estiverem no PATH, venham de onde
+vierem. Duas coisas a saber:
+
+- a versão nova só aparece em shells abertos depois da instalação; abra uma aba nova do Herdr antes
+  de rodar o Claude;
+- com o pyenv, um `.python-version` na pasta do seu projeto vale também para a esteira, que roda
+  ali; se ele fixar uma versão abaixo de 3.10, é ela que a esteira vai encontrar.
+
 **O ambiente do seu projeto é com você.** Linguagem, banco, Docker, SDKs: os agentes rodam e testam
 o projeto do jeito que o README e o `CLAUDE.md` dele explicam, com o que já está instalado na
 máquina. A esteira não instala nada disso.
