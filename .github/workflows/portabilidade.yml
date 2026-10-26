@@ -4,6 +4,16 @@ name: portabilidade
 
 on:
   workflow_dispatch:
+    inputs:
+      sistemas:
+        description: "Em quais sistemas (macOS espera fila de runner: minutos)"
+        type: choice
+        options: ["linux e macos", "linux", "macos"]
+        default: "linux e macos"
+      video:
+        description: "Incluir o teste do vídeo do QA (mais lento: instala ffmpeg, sobe o Chrome)"
+        type: boolean
+        default: true
 
 jobs:
   pipeline:
@@ -11,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: ${{ fromJSON(inputs.sistemas == 'linux' && '["ubuntu-latest"]' || inputs.sistemas == 'macos' && '["macos-latest"]' || '["ubuntu-latest", "macos-latest"]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
@@ -32,10 +42,11 @@ jobs:
 
   video:
     name: vídeo do QA (${{ matrix.os }})
+    if: ${{ inputs.video }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: ${{ fromJSON(inputs.sistemas == 'linux' && '["ubuntu-latest"]' || inputs.sistemas == 'macos' && '["macos-latest"]' || '["ubuntu-latest", "macos-latest"]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
