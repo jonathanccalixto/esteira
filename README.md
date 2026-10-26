@@ -7,15 +7,15 @@ mostrando que funciona) e deixa pronto para você homologar. Cada etapa tem a su
 GitHub e um agente dedicado no [Herdr](https://github.com/herdrdev/herdr); loops em shell, que não
 gastam token, entregam a próxima issue para quem estiver livre.
 
-> **Só Linux.** A esteira foi feita e testada no Linux e depende dele: os scripts usam `/proc`,
-> `flock` e X11 (os displays próprios onde o QA grava os testes), e o Herdr é a base de tudo. macOS
-> e Windows (mesmo com WSL) não foram testados e, do jeito que está, não devem funcionar.
+> **Linux e macOS.** A esteira foi feita e testada no Linux. No macOS ela roda por caminhos próprios
+> onde o Linux usa algo que o Mac não tem (`/proc`, `flock`, `timeout`, X11), sem mudar o que o
+> Linux faz: veja [macOS](#macos). Windows (mesmo com WSL) não foi testado.
 >
 > **Usa outro sistema?** As skills e os scripts são texto legível e o Claude Code os entende bem:
 > depois de copiar as skills para o projeto, peça a ele para adaptar ao seu contexto. Por exemplo:
 > *"adapte as skills `esteira-*` e os scripts em `.claude/skills/esteira-bootstrap/pipeline/bin/`
-> para o macOS: troque o `flock`, o `/proc` e o Xephyr por equivalentes daqui"*. O mesmo vale para
-> outro multiplexador no lugar do Herdr, outro jeito de testar ou outras colunas no board.
+> para o meu sistema: troque o `flock`, o `/proc` e o Xephyr por equivalentes daqui"*. O mesmo vale
+> para outro multiplexador no lugar do Herdr, outro jeito de testar ou outras colunas no board.
 
 ```
  Planning queue ─► plan ─► Dev queue ─► dev ─► Review queue ─► review ─► QA queue ─► qa ─► Ready for release
@@ -91,17 +91,38 @@ A esteira em si precisa só disto:
 | [Claude Code](https://claude.com/claude-code) | os agentes | `curl -fsSL https://claude.ai/install.sh \| bash` |
 | [Herdr](https://github.com/herdrdev/herdr) | os spaces, as abas e o controle dos agentes | binário nas releases do repositório do Herdr |
 | [GitHub CLI](https://cli.github.com) (`gh`) | board, issues, PRs | `sudo apt install gh` / `sudo dnf install gh`, depois `gh auth login` e `gh auth refresh -s project` |
-| git, Python 3.10+, `flock` | scripts | já vêm na maioria das distros Linux (`flock` é do `util-linux`) |
+| git, Python 3.10+, `flock` | scripts | já vêm na maioria das distros Linux (`flock` é do `util-linux`); no macOS, veja [abaixo](#macos) |
 
 **Linux.** A esteira foi feita e testada no Linux (veja o aviso no topo). Distros testadas: Ubuntu
 e derivadas; qualquer distro com as ferramentas acima deve servir.
+
+### macOS
+
+```bash
+brew install herdr gh python git          # o python3 do Xcode é 3.9; a esteira pede 3.10+
+brew install ffmpeg node uv                # vídeo do QA (opcional)
+brew install --cask google-chrome          # se ainda não tiver o Chrome
+```
+
+`flock` e `timeout` não são necessários: a esteira traz substitutos (`bin/flock.py`, `bin/prazo.sh`)
+que só entram quando o comando do sistema não existe. O que muda em relação ao Linux:
+
+- **Limpeza e status**: processos da worktree achados pelo `lsof`, RAM livre pelo `vm_stat`.
+- **QA sem display próprio**: o macOS não tem X11 e o Chrome de lá ignora `DISPLAY`. Para nada abrir
+  na sua tela, o Chrome do QA roda **headless**; o vídeo é gravado pelo próprio Chrome
+  (`gravar-cdp.js`, screencast do CDP) e o cursor é desenhado na página. Não pede permissão de
+  Gravação de Tela, porque não grava a tela.
+- **App desktop nativo** não tem como rodar isolado da sua tela: o QA o testa sem vídeo e diz por quê.
+
+Esses caminhos foram exercitados simulando o macOS num Linux; se algo não se comportar como
+descrito num Mac de verdade, abra uma issue com a saída do comando.
 
 **O ambiente do seu projeto é com você.** Linguagem, banco, Docker, SDKs: os agentes rodam e testam
 o projeto do jeito que o README e o `CLAUDE.md` dele explicam, com o que já está instalado na
 máquina. A esteira não instala nada disso.
 
 **Para o vídeo do QA** (opcional, mas é o que torna a homologação rápida): `ffmpeg`, `Xephyr`,
-`xdotool`, `xdpyinfo`, Node 18+, Chrome ou Chromium e `uv`. Depois da instalação,
+`xdotool`, `xdpyinfo` (estes três só no Linux), Node 18+, Chrome ou Chromium e `uv`. Depois da instalação,
 `.claude/skills/esteira-qa/scripts/preparar-video.sh verificar` diz o que falta e
 `preparar-video.sh instalar` baixa os modelos de voz offline. Sem essas ferramentas o QA roda
 normalmente, só que sem vídeo.
@@ -389,6 +410,7 @@ skills/                                     → .claude/skills/ do projeto
         board.py                            operações no board e nas issues (via gh)
         signals.py                          sinais determinísticos de risco (triagem e PRs)
         worktree.sh, cleanup.sh, lock.sh    worktree idempotente, limpeza, travas
+        flock.py, prazo.sh                  flock e timeout onde o sistema não os tem (macOS)
         evidence.sh                         publica evidências no repositório de evidências
         start-all.sh, run-loop.sh, status.py  subir tudo, loop de sessão nova, painel
   esteira-criar-issue                       a porta de entrada: pedido → issue na Planning queue
