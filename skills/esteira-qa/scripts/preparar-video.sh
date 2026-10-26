@@ -11,6 +11,8 @@ VOZES=${QA_BOT_VOZES:-${XDG_DATA_HOME:-$HOME/.local/share}}/kokoro
 KOKORO_URL=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0
 APT="sudo apt install -y ffmpeg xserver-xephyr x11-utils xdotool nodejs npm python3"
 DNF="sudo dnf install -y ffmpeg xorg-x11-server-Xephyr xdpyinfo xdotool nodejs npm python3"
+BREW="brew install ffmpeg node python uv"   # macOS: sem X11; Chrome headless + gravar-cdp.js
+MAC=0; [[ $(uname -s) == Darwin ]] && MAC=1
 
 tem () { command -v "$1" > /dev/null 2>&1; }
 falta=0
@@ -21,9 +23,11 @@ opcional () { if tem "$1"; then linha ok "$1" "$(command -v "$1")"; else linha -
 verificar () {
   obrigatorio ffmpeg "grava e monta o vídeo"
   obrigatorio ffprobe "vem com o ffmpeg"
+  if (( ! MAC )); then   # no macOS o Chrome é headless: sem display X, cursor desenhado na página
   obrigatorio Xephyr "display próprio da gravação (xserver-xephyr)"
   obrigatorio xdpyinfo "confere o display (x11-utils)"
   obrigatorio xdotool "move o cursor de verdade"
+  fi
   obrigatorio node "Node 18+ (palco de API, demo-lib)"
   obrigatorio npm "instala o playwright-core da gravação"
   obrigatorio python3 "Python 3.10+ (qa_video.py)"
@@ -56,7 +60,11 @@ case ${1:-verificar} in
     done
     tem uv && uv run --quiet --with kokoro-onnx --with soundfile python -c 'import kokoro_onnx' && echo "ambiente do Kokoro em cache"
     echo
+    if (( MAC )); then
+      verificar || echo -e "\nO que falta, instale você mesmo:\n  macOS: $BREW\n  (Chrome: https://www.google.com/chrome/ ou brew install --cask google-chrome)"
+    else
     verificar || echo -e "\nO que falta pede sudo; rode você mesmo:\n  Debian/Ubuntu: $APT\n  Fedora:        $DNF\n  (Chrome: https://www.google.com/chrome/ ou o pacote chromium da distro)"
+    fi
     ;;
   pasta)
     destino=${2:?informe a pasta work da gravação}
