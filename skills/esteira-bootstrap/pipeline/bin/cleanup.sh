@@ -20,6 +20,26 @@ spare=" $$ "; p=$$
 while [[ $p -gt 1 ]]; do p=$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' '); [[ -n $p ]] || break; spare+="$p "; done
 for wt in "$wtdir"/*-"$issue"; do
   [[ -d $wt ]] || continue
+  if [[ $(uname -s) == Darwin ]]; then
+    # No /proc on macOS: lsof lists the cwd of every process of this user
+    # (-Fpn: "p<pid>" then "n<path>" lines). lsof prints resolved paths, so
+    # the worktree is compared by its physical path too.
+    real=$(cd "$wt" && pwd -P)
+    pid=
+    while IFS= read -r line; do
+      case $line in
+        p*) pid=${line#p} ;;
+        n*)
+          cwd=${line#n}
+          [[ -n $pid && $spare != *" $pid "* ]] || continue
+          if [[ $cwd == "$real" || $cwd == "$real/"* ]]; then
+            cmd=$(ps -o command= -p "$pid" 2>/dev/null | cut -c1-60)
+            kill "$pid" 2>/dev/null && say "stopped pid $pid ($cmd) in ${wt##*/}"
+          fi ;;
+      esac
+    done < <(lsof -a -d cwd -u "$USER" -Fpn 2>/dev/null)
+    continue
+  fi
   for pid in $(ls /proc | grep -E '^[0-9]+$'); do
     [[ $spare == *" $pid "* ]] && continue
     cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null) || continue
