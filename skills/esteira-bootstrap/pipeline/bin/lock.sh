@@ -11,7 +11,8 @@ name=${1:?usage: lock.sh <name> <command...>}; shift
 state=$(eval echo "$(python3 -c "import json;print(json.load(open('$(dirname "$0")/../config.json'))['state_dir'])")")
 mkdir -p "$state"
 exec 9>"$state/$name.lock"
-flock -w 3600 9 || { echo "$name busy for an hour; giving up" >&2; exit 75; }
+# util-linux flock where it exists (Linux); flock.py, same contract, where it doesn't (macOS).
+if command -v flock >/dev/null; then flock -w 3600 9; else "$(dirname "$0")/flock.py" -w 3600 9; fi || { echo "$name busy for an hour; giving up" >&2; exit 75; }
 python3 -c 'import json,sys,time;print(json.dumps({"pid":int(sys.argv[1]),"since":int(time.time()),"cwd":sys.argv[2],"cmd":" ".join(sys.argv[3:])}))' "$$" "$PWD" "$@" > "$state/$name.owner"
 trap 'rm -f "$state/$name.owner"' EXIT
 "$@"
