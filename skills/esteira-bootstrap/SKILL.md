@@ -32,7 +32,7 @@ python3 $E check
 ```
 
 Mostre uma tabela curta (item, ok/falta, como resolver). Os obrigatórios: git, Python 3.10+,
-`flock`, Claude Code, Herdr, **estar dentro do Herdr**, `gh` instalado, autenticado e com o escopo
+`flock` (só no Linux; no macOS a esteira usa um substituto próprio), Claude Code, Herdr, **estar dentro do Herdr**, `gh` instalado, autenticado e com o escopo
 `project`, e a pasta estar num repositório com remoto no GitHub (num monorepo, a pasta do projeto
 pode ser uma subpasta: a esteira registra isso como `subdir`).
 
