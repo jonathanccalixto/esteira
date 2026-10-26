@@ -1,9 +1,9 @@
-# A esteira roda no Linux e no macOS: cada push confere os dois.
+# A esteira roda no Linux e no macOS. Este workflow confere os dois, mas só quando alguém manda
+# (Actions > portabilidade > Run workflow): a fila de runners do macOS sozinha leva minutos.
 name: portabilidade
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   pipeline:
