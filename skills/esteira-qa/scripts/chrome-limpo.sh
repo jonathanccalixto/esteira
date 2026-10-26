@@ -11,7 +11,12 @@
 set -euo pipefail
 
 acao=${1:?uso: chrome-limpo.sh subir|descer <pasta-da-rodada> [url] [geometria]}
-run=$(realpath "${2:?informe a pasta da rodada}")
+if [[ $(uname -s) == Darwin ]]; then
+  # O realpath do macOS (BSD) recusa caminho que ainda não existe; o GNU aceita. Mesmo resultado pelo Python.
+  run=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${2:?informe a pasta da rodada}")
+else
+  run=$(realpath "${2:?informe a pasta da rodada}")
+fi
 w=$run/work
 envf=$w/navegador.env
 
