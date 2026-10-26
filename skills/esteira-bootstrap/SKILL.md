@@ -45,12 +45,10 @@ pode ser uma subpasta: a esteira registra isso como `subdir`).
   `claude` e chamar `/esteira-bootstrap` de lá. Pare aqui.
 - Ferramentas do vídeo do QA faltando: não bloqueia; avise que o QA vai rodar sem vídeo até ele
   instalar (mostre o que falta).
-- Python (ou o Node do vídeo do QA) faltando ou antigo: mostre o comando do sistema que o `check`
-  traz e sugira, como recomendado, instalar pelo versionador (`pyenv install 3.12 && pyenv global
-  3.12`, `nvm install 20 && nvm alias default 20`). Para a esteira tanto faz de onde vieram: ela usa
-  o `python3` e o `node` do PATH. Depois de instalar pelo versionador, o PATH só muda em shells
-  novos: ele precisa sair do Claude, abrir uma aba nova do Herdr na pasta do projeto, rodar `claude`
-  e chamar `/esteira-bootstrap` de novo.
+- Python (ou o Node do vídeo do QA) faltando ou abaixo do mínimo: não proponha comando de
+  instalação. A forma de instalar linguagens (pacote do sistema ou versionador) fica só no README da
+  esteira, em "Pré-requisitos": aponte essa seção. Quando ele terminar, rode o `check` de novo, numa
+  aba nova do Herdr (o PATH só muda em shells novos).
 - Confirme a conta do `gh` mostrada no `check`: é com ela que a esteira vai comentar, abrir PR e
   fazer merge. Se não for a certa, pare: ele troca e roda de novo.
 
