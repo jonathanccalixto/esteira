@@ -26,18 +26,34 @@ def locks():
     return {p.stem: lock_owner(p.stem) for p in sorted(lib.state_dir().glob("*.owner"))}
 
 
+def pid_alive(pid):
+    if sys.platform != "darwin":
+        return os.path.exists(f"/proc/{pid}")
+    # No /proc on macOS: signal 0 checks the process without touching it.
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True  # exists, owned by someone else
+    return True
+
+
 def lock_owner(name):
     p = lib.state_dir() / f"{name}.owner"
     o = lib.load(p, None)
     if not o:
         return "livre"
-    alive = os.path.exists(f"/proc/{o['pid']}")
+    alive = pid_alive(o["pid"])
     return f"{'em uso' if alive else 'dono morto'} há {ago(o['since'])} ({os.path.basename(o['cwd'])})"
 
 
 def loops():
     out = {}
-    ps = subprocess.run(["ps", "-eo", "args"], capture_output=True, text=True).stdout
+    # BSD ps (macOS) cuts `args` at the terminal width unless told otherwise (-ww),
+    # and the needles below are long full paths.
+    cmd = ["ps", "-axww", "-o", "args"] if sys.platform == "darwin" else ["ps", "-eo", "args"]
+    ps = subprocess.run(cmd, capture_output=True, text=True).stdout
     b = str(lib.HERE)  # full path: another project's loops on the same machine must not count
     needles = [(f"dispatch {k}", f"{b}/dispatch.py {k} --loop") for k in lib.cfg()["stages"]]
     needles.append(("supervisor", f"{b}/supervise.py --loop"))
