@@ -28,6 +28,12 @@ fi
 
 url=${3:?informe a URL inicial}
 chrome=${CHROME:-$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)}
+if [[ -z $chrome && $(uname -s) == Darwin ]]; then
+  # No macOS o Chrome é um .app, fora do PATH.
+  for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "/Applications/Chromium.app/Contents/MacOS/Chromium"; do
+    [[ -x $c ]] && { chrome=$c; break; }
+  done
+fi
 [[ -n $chrome ]] || { echo "nem google-chrome nem chromium no PATH (ou defina CHROME)" >&2; exit 1; }
 geo=${4:-1440x900}
 [[ -f $envf ]] && { echo "já existe navegador desta rodada ($envf): rode 'descer' antes" >&2; exit 1; }

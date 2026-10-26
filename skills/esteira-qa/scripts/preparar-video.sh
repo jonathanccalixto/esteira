@@ -30,6 +30,10 @@ verificar () {
   obrigatorio uv "roda o Kokoro sem instalar nada no projeto (curl -LsSf https://astral.sh/uv/install.sh | sh)"
   if tem google-chrome || tem chromium || tem chromium-browser || [[ -n ${CHROME:-} ]]; then
     linha ok chrome "${CHROME:-$(command -v google-chrome || command -v chromium || command -v chromium-browser)}"
+  elif [[ $(uname -s) == Darwin && -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]]; then
+    linha ok chrome "/Applications/Google Chrome.app"
+  elif [[ $(uname -s) == Darwin && -x "/Applications/Chromium.app/Contents/MacOS/Chromium" ]]; then
+    linha ok chrome "/Applications/Chromium.app"
   else
     linha FALTA chrome "google-chrome ou chromium (ou CHROME=<binário>)"; falta=1
   fi
