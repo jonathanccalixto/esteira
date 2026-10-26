@@ -13,7 +13,11 @@ tmp=$(mktemp -d)
 trap 'kill $(jobs -p) 2>/dev/null; rm -rf "$tmp"' EXIT
 falhas=0
 ok () { echo "ok    $*"; }
-erro () { echo "FALHA $*"; falhas=$((falhas + 1)); }
+erro () {
+  echo "FALHA $*"; falhas=$((falhas + 1))
+  # Na CI, a falha vira anotação: aparece no resumo do PR sem abrir o log inteiro.
+  [[ -n ${GITHUB_ACTIONS:-} ]] && echo "::error title=portabilidade ($(uname -s))::$*"
+}
 confere () { local nome=$1; shift; if "$@"; then ok "$nome"; else erro "$nome"; fi; }
 
 echo "sistema: $(uname -s) · bash $BASH_VERSION · $(python3 --version)"

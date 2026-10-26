@@ -18,7 +18,19 @@ G=$tmp/rodada
 V=$G/work/video
 desce () { "$SK/scripts/chrome-limpo.sh" descer "$G" > /dev/null 2>&1; rm -rf "$tmp"; }
 trap desce EXIT
-morre () { echo "FALHA $*"; for l in "$G"/work/*.log "$V"/*.log; do [[ -s $l ]] && { echo "--- $l"; tail -20 "$l"; }; done; exit 1; }
+morre () {
+  local logs=
+  for l in "$G"/work/*.log "$V"/*.log; do [[ -s $l ]] && logs+="--- ${l##*/}"$'\n'"$(tail -20 "$l")"$'\n'; done
+  echo "FALHA $*"; printf '%s' "$logs"
+  # Na CI, a falha (com o fim dos logs da rodada) vira anotação: aparece no resumo do PR.
+  if [[ -n ${GITHUB_ACTIONS:-} ]]; then
+    # Escapes do GitHub para mensagem de várias linhas; sem aspas no padrão (o bash 3.2 as mantém).
+    local nl=$'\n' cr=$'\r'
+    msg="$*$nl$logs"; msg=${msg//\%/%25}; msg=${msg//$cr/%0D}; msg=${msg//$nl/%0A}
+    echo "::error title=vídeo do QA ($(uname -s))::$msg"
+  fi
+  exit 1
+}
 ok () { echo "ok    $*"; }
 qv () { python3 "$SK/scripts/qa_video.py" "$@"; }
 
