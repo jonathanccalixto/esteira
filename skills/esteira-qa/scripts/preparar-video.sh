@@ -9,9 +9,17 @@ set -uo pipefail
 SK=$(cd "$(dirname "$0")/.." && pwd)
 VOZES=${QA_BOT_VOZES:-${XDG_DATA_HOME:-$HOME/.local/share}}/kokoro
 KOKORO_URL=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0
-APT="sudo apt install -y ffmpeg xserver-xephyr x11-utils xdotool nodejs npm python3"
-DNF="sudo dnf install -y ffmpeg xorg-x11-server-Xephyr xdpyinfo xdotool nodejs npm python3"
-BREW="brew install ffmpeg node python uv"   # macOS: sem X11; Chrome headless + gravar-cdp.js
+APT="sudo apt install -y ffmpeg xserver-xephyr x11-utils xdotool"
+DNF="sudo dnf install -y ffmpeg xorg-x11-server-Xephyr xdpyinfo xdotool"
+BREW="brew install ffmpeg uv"   # macOS: sem X11; Chrome headless + gravar-cdp.js
+# Python e Node à parte: o pacote do sistema serve, mas a sugestão é instalar pelo versionador. Para a
+# esteira tanto faz: ela usa o python3 e o node que estiverem no PATH, venham de onde vierem.
+PY_LINUX="sudo apt install -y python3  /  sudo dnf install -y python3"
+NODE_LINUX="sudo apt install -y nodejs npm  /  sudo dnf install -y nodejs npm"
+PY_MAC="brew install python"
+NODE_MAC="brew install node"
+PY_PYENV="pyenv install 3.12 && pyenv global 3.12   (pyenv: https://github.com/pyenv/pyenv)"
+NODE_NVM="nvm install 20 && nvm alias default 20   (nvm: https://github.com/nvm-sh/nvm)"
 MAC=0; [[ $(uname -s) == Darwin ]] && MAC=1
 
 tem () { command -v "$1" > /dev/null 2>&1; }
@@ -61,9 +69,9 @@ case ${1:-verificar} in
     tem uv && uv run --quiet --with kokoro-onnx --with soundfile python -c 'import kokoro_onnx' && echo "ambiente do Kokoro em cache"
     echo
     if (( MAC )); then
-      verificar || echo -e "\nO que falta, instale você mesmo:\n  macOS: $BREW\n  (Chrome: https://www.google.com/chrome/ ou brew install --cask google-chrome)"
+      verificar || echo -e "\nO que falta, instale você mesmo:\n  macOS:         $BREW\n  Python 3.10+:  $PY_MAC\n                 ou pelo pyenv (recomendado): $PY_PYENV\n  Node 18+:      $NODE_MAC\n                 ou pelo nvm (recomendado): $NODE_NVM\n  (Chrome: https://www.google.com/chrome/ ou brew install --cask google-chrome)"
     else
-    verificar || echo -e "\nO que falta pede sudo; rode você mesmo:\n  Debian/Ubuntu: $APT\n  Fedora:        $DNF\n  (Chrome: https://www.google.com/chrome/ ou o pacote chromium da distro)"
+    verificar || echo -e "\nO que falta pede sudo; rode você mesmo:\n  Debian/Ubuntu: $APT\n  Fedora:        $DNF\n  Python 3.10+:  $PY_LINUX\n                 ou pelo pyenv (recomendado): $PY_PYENV\n  Node 18+:      $NODE_LINUX\n                 ou pelo nvm (recomendado): $NODE_NVM\n  (Chrome: https://www.google.com/chrome/ ou o pacote chromium da distro)"
     fi
     ;;
   pasta)
