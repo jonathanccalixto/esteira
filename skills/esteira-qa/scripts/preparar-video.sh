@@ -12,8 +12,8 @@ KOKORO_URL=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-f
 APT="sudo apt install -y ffmpeg xserver-xephyr x11-utils xdotool"
 DNF="sudo dnf install -y ffmpeg xorg-x11-server-Xephyr xdpyinfo xdotool"
 BREW="brew install ffmpeg uv"   # macOS: sem X11; Chrome headless + gravar-cdp.js
-# Python e Node não entram aqui: como instalar (pacote do sistema ou versionador) está só no README.
-LANGS="Python 3.10+ e Node 18+: veja \"Pré-requisitos\" no README da esteira (pacote do sistema ou pyenv/nvm)"
+# Python e Node não entram aqui: como instalá-los está só no README.
+LANGS="Python 3.10+ e Node 18+: veja \"Pré-requisitos\" no README da esteira"
 MAC=0; [[ $(uname -s) == Darwin ]] && MAC=1
 
 tem () { command -v "$1" > /dev/null 2>&1; }

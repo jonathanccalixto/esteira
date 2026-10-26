@@ -46,8 +46,8 @@ pode ser uma subpasta: a esteira registra isso como `subdir`).
 - Ferramentas do vídeo do QA faltando: não bloqueia; avise que o QA vai rodar sem vídeo até ele
   instalar (mostre o que falta).
 - Python (ou o Node do vídeo do QA) faltando ou abaixo do mínimo: não proponha comando de
-  instalação. A forma de instalar linguagens (pacote do sistema ou versionador) fica só no README da
-  esteira, em "Pré-requisitos": aponte essa seção. Quando ele terminar, rode o `check` de novo, numa
+  instalação. Como instalar linguagens fica só no README da esteira, em
+  "Pré-requisitos": aponte essa seção. Quando ele terminar, rode o `check` de novo, numa
   aba nova do Herdr (o PATH só muda em shells novos).
 - Confirme a conta do `gh` mostrada no `check`: é com ela que a esteira vai comentar, abrir PR e
   fazer merge. Se não for a certa, pare: ele troca e roda de novo.

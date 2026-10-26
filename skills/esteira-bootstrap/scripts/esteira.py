@@ -100,7 +100,7 @@ def check():
     item("git", have("git"), True, "xcode-select --install  (ou brew install git)" if MAC
          else "instale o git pelo gerenciador de pacotes")
     item("python3 >= 3.10", sys.version_info >= (3, 10), True,
-         'instale Python 3.10+: veja "Pré-requisitos" no README da esteira (pacote do sistema ou pyenv)')
+         'instale Python 3.10+: veja "Pré-requisitos" no README da esteira')
     if not MAC:  # macOS has no util-linux; lock.sh/evidence.sh fall back to bin/flock.py there
         item("flock (util-linux)", have("flock"), True, "sudo apt install util-linux  /  sudo dnf install util-linux")
     item("claude (Claude Code)", have("claude"), True, "curl -fsSL https://claude.ai/install.sh | bash")
