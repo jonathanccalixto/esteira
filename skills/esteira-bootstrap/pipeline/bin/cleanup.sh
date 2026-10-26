@@ -40,6 +40,6 @@ fi
 # 3. The project's own teardown (emulators, test displays, VMs, daemons...).
 hook=$here/../hooks/cleanup.sh
 if [[ -x $hook ]]; then
-  ESTEIRA_STATE=$state ESTEIRA_WORKTREES=$wtdir timeout 120 "$hook" "$stage" "$issue" 2>&1 | sed 's/^/cleanup (hook): /'
+  ESTEIRA_STATE=$state ESTEIRA_WORKTREES=$wtdir "$here/prazo.sh" 120 "$hook" "$stage" "$issue" 2>&1 | sed 's/^/cleanup (hook): /'
 fi
 exit 0
