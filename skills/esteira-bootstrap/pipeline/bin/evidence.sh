@@ -15,7 +15,9 @@ j() { python3 -c "import json,os;c=json.load(open('$cfg'));print(os.path.expandu
 repo=$(j "c['evidence_repo']"); dir=$(j "c['evidence_checkout']"); state=$(j "c['state_dir']")
 ssh=$(j "c.get('git_ssh_command','')"); [[ -n $ssh ]] && export GIT_SSH_COMMAND="$ssh"
 mkdir -p "$state"
-exec 9>"$state/evidence.lock"; flock 9
+exec 9>"$state/evidence.lock"
+# util-linux flock where it exists (Linux); flock.py, same contract, where it doesn't (macOS).
+if command -v flock >/dev/null; then flock 9; else "$(dirname "$0")/flock.py" 9; fi
 [[ -d $dir/.git ]] || gh repo clone "$repo" "$dir" -- -q
 cd "$dir"
 branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo main)
@@ -28,7 +30,7 @@ git push -q origin "HEAD:$branch"
 sha=$(git rev-parse HEAD)
 for f in "$@"; do
   b=$(basename "$f"); alt=${b%.*}; alt=${alt//-/ }
-  case ${b,,} in
+  case $(printf '%s' "$b" | tr '[:upper:]' '[:lower:]') in   # not ${b,,}: bash 3.2 (macOS) lacks it
     *.png|*.jpg|*.jpeg|*.gif|*.webp|*.svg) echo "![${alt}](https://raw.githubusercontent.com/$repo/$sha/$dest/$b)" ;;
     *) echo "[${b}](https://github.com/$repo/blob/$sha/$dest/$b)" ;;
   esac

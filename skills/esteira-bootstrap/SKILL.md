@@ -32,7 +32,7 @@ python3 $E check
 ```
 
 Mostre uma tabela curta (item, ok/falta, como resolver). Os obrigatórios: git, Python 3.10+,
-`flock`, Claude Code, Herdr, **estar dentro do Herdr**, `gh` instalado, autenticado e com o escopo
+`flock` (só no Linux; no macOS a esteira usa um substituto próprio), Claude Code, Herdr, **estar dentro do Herdr**, `gh` instalado, autenticado e com o escopo
 `project`, e a pasta estar num repositório com remoto no GitHub (num monorepo, a pasta do projeto
 pode ser uma subpasta: a esteira registra isso como `subdir`).
 
@@ -45,6 +45,10 @@ pode ser uma subpasta: a esteira registra isso como `subdir`).
   `claude` e chamar `/esteira-bootstrap` de lá. Pare aqui.
 - Ferramentas do vídeo do QA faltando: não bloqueia; avise que o QA vai rodar sem vídeo até ele
   instalar (mostre o que falta).
+- Python (ou o Node do vídeo do QA) faltando ou abaixo do mínimo: não proponha comando de
+  instalação. Como instalar linguagens fica só no README da esteira, em
+  "Pré-requisitos": aponte essa seção. Quando ele terminar, rode o `check` de novo, numa
+  aba nova do Herdr (o PATH só muda em shells novos).
 - Confirme a conta do `gh` mostrada no `check`: é com ela que a esteira vai comentar, abrir PR e
   fazer merge. Se não for a certa, pare: ele troca e roda de novo.
 

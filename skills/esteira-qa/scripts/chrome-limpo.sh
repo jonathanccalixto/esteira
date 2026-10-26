@@ -11,7 +11,12 @@
 set -euo pipefail
 
 acao=${1:?uso: chrome-limpo.sh subir|descer <pasta-da-rodada> [url] [geometria]}
-run=$(realpath "${2:?informe a pasta da rodada}")
+if [[ $(uname -s) == Darwin ]]; then
+  # O realpath do macOS (BSD) recusa caminho que ainda não existe; o GNU aceita. Mesmo resultado pelo Python.
+  run=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${2:?informe a pasta da rodada}")
+else
+  run=$(realpath "${2:?informe a pasta da rodada}")
+fi
 w=$run/work
 envf=$w/navegador.env
 
@@ -28,17 +33,34 @@ fi
 
 url=${3:?informe a URL inicial}
 chrome=${CHROME:-$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)}
+if [[ -z $chrome && $(uname -s) == Darwin ]]; then
+  # No macOS o Chrome é um .app, fora do PATH.
+  for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "/Applications/Chromium.app/Contents/MacOS/Chromium"; do
+    [[ -x $c ]] && { chrome=$c; break; }
+  done
+fi
 [[ -n $chrome ]] || { echo "nem google-chrome nem chromium no PATH (ou defina CHROME)" >&2; exit 1; }
 geo=${4:-1440x900}
 [[ -f $envf ]] && { echo "já existe navegador desta rodada ($envf): rode 'descer' antes" >&2; exit 1; }
 mkdir -p "$w"
 
-n=90; while [[ -e /tmp/.X11-unix/X$n || -e /tmp/.X$n-lock ]]; do n=$((n + 1)); done
 porta=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')
 
-Xephyr ":$n" -screen "$geo" -nolisten tcp -ac -title "QA BOT :$n" > "$w/xephyr.log" 2>&1 &
-xephyr_pid=$!
-for _ in $(seq 50); do xdpyinfo -display ":$n" > /dev/null 2>&1 && break; sleep 0.1; done
+if [[ $(uname -s) == Darwin ]]; then
+  # macOS: não há X11 para um display próprio, e o Chrome de lá é Cocoa (ignora DISPLAY). Para nada
+  # abrir na tela do usuário, o Chrome roda headless; a gravação vem do próprio Chrome
+  # (scripts/gravar-cdp.js) e o cursor é desenhado na página (demo-lib.js). QA_DISPLAY=headless avisa
+  # os scripts da rodada.
+  disp=headless; xephyr_pid=
+  tela=("$chrome" --headless=new)
+else
+  n=90; while [[ -e /tmp/.X11-unix/X$n || -e /tmp/.X$n-lock ]]; do n=$((n + 1)); done
+  Xephyr ":$n" -screen "$geo" -nolisten tcp -ac -title "QA BOT :$n" > "$w/xephyr.log" 2>&1 &
+  xephyr_pid=$!
+  for _ in $(seq 50); do xdpyinfo -display ":$n" > /dev/null 2>&1 && break; sleep 0.1; done
+  disp=:$n
+  tela=(env DISPLAY=":$n" "$chrome" --kiosk --window-position=0,0)
+fi
 
 # Preferências do perfil novo: tradução, senhas, autofill, notificações e restauração desligadas;
 # português como idioma aceito (a página em pt-BR não "parece estrangeira" ao Chrome).
@@ -62,9 +84,9 @@ cat > "$w/chrome/Default/Preferences" <<'JSON'
 }
 JSON
 
-DISPLAY=":$n" "$chrome" \
+"${tela[@]}" \
   --user-data-dir="$w/chrome" --remote-debugging-port="$porta" \
-  --kiosk --window-position=0,0 --window-size="${geo/x/,}" \
+  --window-size="${geo/x/,}" \
   --lang=pt-BR --accept-lang=pt-BR,pt \
   --disable-extensions --disable-component-extensions-with-background-pages \
   --disable-features=Translate,TranslateUI,PasswordManagerOnboarding,AutofillServerCommunication,MediaRouter,OptimizationHints \
@@ -80,10 +102,10 @@ for _ in $(seq 100); do curl -sf "http://127.0.0.1:$porta/json/version" > /dev/n
 curl -sf "http://127.0.0.1:$porta/json/version" > /dev/null || { kill $chrome_pid $xephyr_pid 2>/dev/null; echo "Chrome não respondeu no CDP; veja $w/chrome.log" >&2; exit 1; }
 
 cat > "$envf" <<EOF
-QA_DISPLAY=:$n
+QA_DISPLAY=$disp
 CDP=http://127.0.0.1:$porta
 CHROME_PID=$chrome_pid
 XEPHYR_PID=$xephyr_pid
 GEOMETRIA=$geo
 EOF
-echo "{\"display\": \":$n\", \"cdp\": \"http://127.0.0.1:$porta\", \"geometria\": \"$geo\", \"env\": \"$envf\"}"
+echo "{\"display\": \"$disp\", \"cdp\": \"http://127.0.0.1:$porta\", \"geometria\": \"$geo\", \"env\": \"$envf\"}"

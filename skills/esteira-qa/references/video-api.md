@@ -2,7 +2,7 @@
 
 Cenário sem tela (API REST, fila, worker, integração) também ganha vídeo. Ele é gravado sobre o
 **palco de API**: uma página local, servida pela skill, aberta num Chrome limpo dentro de um display
-próprio (Xephyr). Quem assiste vê a requisição, a resposta e o veredito de cada etapa, com a voz
+próprio (Xephyr; no macOS, Chrome headless). Quem assiste vê a requisição, a resposta e o veredito de cada etapa, com a voz
 explicando, sem precisar ler JSON solto num relatório.
 
 - **No topo:** título e descrição do cenário, ambiente e as etapas (`1 Login · 2 Criar · 3 Worker`).

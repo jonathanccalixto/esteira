@@ -20,6 +20,26 @@ spare=" $$ "; p=$$
 while [[ $p -gt 1 ]]; do p=$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' '); [[ -n $p ]] || break; spare+="$p "; done
 for wt in "$wtdir"/*-"$issue"; do
   [[ -d $wt ]] || continue
+  if [[ $(uname -s) == Darwin ]]; then
+    # No /proc on macOS: lsof lists the cwd of every process of this user
+    # (-Fpn: "p<pid>" then "n<path>" lines). lsof prints resolved paths, so
+    # the worktree is compared by its physical path too.
+    real=$(cd "$wt" && pwd -P)
+    pid=
+    while IFS= read -r line; do
+      case $line in
+        p*) pid=${line#p} ;;
+        n*)
+          cwd=${line#n}
+          [[ -n $pid && $spare != *" $pid "* ]] || continue
+          if [[ $cwd == "$real" || $cwd == "$real/"* ]]; then
+            cmd=$(ps -o command= -p "$pid" 2>/dev/null | cut -c1-60)
+            kill "$pid" 2>/dev/null && say "stopped pid $pid ($cmd) in ${wt##*/}"
+          fi ;;
+      esac
+    done < <(lsof -a -d cwd -u "$USER" -Fpn 2>/dev/null)
+    continue
+  fi
   for pid in $(ls /proc | grep -E '^[0-9]+$'); do
     [[ $spare == *" $pid "* ]] && continue
     cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null) || continue
@@ -40,6 +60,6 @@ fi
 # 3. The project's own teardown (emulators, test displays, VMs, daemons...).
 hook=$here/../hooks/cleanup.sh
 if [[ -x $hook ]]; then
-  ESTEIRA_STATE=$state ESTEIRA_WORKTREES=$wtdir timeout 120 "$hook" "$stage" "$issue" 2>&1 | sed 's/^/cleanup (hook): /'
+  ESTEIRA_STATE=$state ESTEIRA_WORKTREES=$wtdir "$here/prazo.sh" 120 "$hook" "$stage" "$issue" 2>&1 | sed 's/^/cleanup (hook): /'
 fi
 exit 0

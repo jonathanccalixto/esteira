@@ -12,7 +12,7 @@ claude=$(j "c.get('claude_command','claude --dangerously-skip-permissions')")
 mkdir -p "$state/logs"; cd "$repo"
 while true; do
   echo "=== $(date '+%F %T') /$skill" >> "$state/logs/$skill.log"
-  timeout 3000 $claude -p "/$skill" >> "$state/logs/$skill.log" 2>&1
+  "$here/prazo.sh" 3000 $claude -p "/$skill" >> "$state/logs/$skill.log" 2>&1
   tail -n 3 "$state/logs/$skill.log"
   sleep "$every"
 done

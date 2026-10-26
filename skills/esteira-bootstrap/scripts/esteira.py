@@ -81,6 +81,9 @@ def out(data, code=0):
 
 # --- check ---------------------------------------------------------------------
 
+MAC = sys.platform == "darwin"   # muda só as dicas de instalação e o flock (ver check)
+
+
 def have(binary):
     return shutil.which(binary) is not None
 
@@ -94,15 +97,18 @@ def check():
         if required and not ok:
             missing = True
 
-    item("git", have("git"), True, "instale o git pelo gerenciador de pacotes")
-    item("python3 >= 3.10", sys.version_info >= (3, 10), True, "instale Python 3.10 ou mais novo")
-    item("flock (util-linux)", have("flock"), True, "sudo apt install util-linux  /  sudo dnf install util-linux")
+    item("git", have("git"), True, "xcode-select --install  (ou brew install git)" if MAC
+         else "instale o git pelo gerenciador de pacotes")
+    item("python3 >= 3.10", sys.version_info >= (3, 10), True,
+         'instale Python 3.10+: veja "Pré-requisitos" no README da esteira')
+    if not MAC:  # macOS has no util-linux; lock.sh/evidence.sh fall back to bin/flock.py there
+        item("flock (util-linux)", have("flock"), True, "sudo apt install util-linux  /  sudo dnf install util-linux")
     item("claude (Claude Code)", have("claude"), True, "curl -fsSL https://claude.ai/install.sh | bash")
-    item("herdr", have("herdr"), True, "instale o Herdr: https://github.com/herdrdev/herdr (releases)")
+    item("herdr", have("herdr"), True, "brew install herdr" if MAC else "instale o Herdr: https://github.com/herdrdev/herdr (releases)")
     item("dentro do Herdr (HERDR_ENV=1)", os.environ.get("HERDR_ENV") == "1", True,
          "abra o Herdr, entre na pasta do projeto, rode `claude` e chame /esteira-bootstrap de lá")
     gh_ok = have("gh")
-    item("gh (GitHub CLI)", gh_ok, True, "https://cli.github.com (sudo apt install gh / sudo dnf install gh)")
+    item("gh (GitHub CLI)", gh_ok, True, "brew install gh" if MAC else "https://cli.github.com (sudo apt install gh / sudo dnf install gh)")
     if gh_ok:
         st = run("gh", "auth", "status", check=False)
         text = st.stdout + st.stderr

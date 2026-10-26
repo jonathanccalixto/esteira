@@ -9,8 +9,12 @@ set -uo pipefail
 SK=$(cd "$(dirname "$0")/.." && pwd)
 VOZES=${QA_BOT_VOZES:-${XDG_DATA_HOME:-$HOME/.local/share}}/kokoro
 KOKORO_URL=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0
-APT="sudo apt install -y ffmpeg xserver-xephyr x11-utils xdotool nodejs npm python3"
-DNF="sudo dnf install -y ffmpeg xorg-x11-server-Xephyr xdpyinfo xdotool nodejs npm python3"
+APT="sudo apt install -y ffmpeg xserver-xephyr x11-utils xdotool"
+DNF="sudo dnf install -y ffmpeg xorg-x11-server-Xephyr xdpyinfo xdotool"
+BREW="brew install ffmpeg uv"   # macOS: sem X11; Chrome headless + gravar-cdp.js
+# Python e Node não entram aqui: como instalá-los está só no README.
+LANGS="Python 3.10+ e Node 18+: veja \"Pré-requisitos\" no README da esteira"
+MAC=0; [[ $(uname -s) == Darwin ]] && MAC=1
 
 tem () { command -v "$1" > /dev/null 2>&1; }
 falta=0
@@ -21,15 +25,21 @@ opcional () { if tem "$1"; then linha ok "$1" "$(command -v "$1")"; else linha -
 verificar () {
   obrigatorio ffmpeg "grava e monta o vídeo"
   obrigatorio ffprobe "vem com o ffmpeg"
+  if (( ! MAC )); then   # no macOS o Chrome é headless: sem display X, cursor desenhado na página
   obrigatorio Xephyr "display próprio da gravação (xserver-xephyr)"
   obrigatorio xdpyinfo "confere o display (x11-utils)"
   obrigatorio xdotool "move o cursor de verdade"
+  fi
   obrigatorio node "Node 18+ (palco de API, demo-lib)"
   obrigatorio npm "instala o playwright-core da gravação"
   obrigatorio python3 "Python 3.10+ (qa_video.py)"
   obrigatorio uv "roda o Kokoro sem instalar nada no projeto (curl -LsSf https://astral.sh/uv/install.sh | sh)"
   if tem google-chrome || tem chromium || tem chromium-browser || [[ -n ${CHROME:-} ]]; then
     linha ok chrome "${CHROME:-$(command -v google-chrome || command -v chromium || command -v chromium-browser)}"
+  elif [[ $(uname -s) == Darwin && -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]]; then
+    linha ok chrome "/Applications/Google Chrome.app"
+  elif [[ $(uname -s) == Darwin && -x "/Applications/Chromium.app/Contents/MacOS/Chromium" ]]; then
+    linha ok chrome "/Applications/Chromium.app"
   else
     linha FALTA chrome "google-chrome ou chromium (ou CHROME=<binário>)"; falta=1
   fi
@@ -52,7 +62,11 @@ case ${1:-verificar} in
     done
     tem uv && uv run --quiet --with kokoro-onnx --with soundfile python -c 'import kokoro_onnx' && echo "ambiente do Kokoro em cache"
     echo
-    verificar || echo -e "\nO que falta pede sudo; rode você mesmo:\n  Debian/Ubuntu: $APT\n  Fedora:        $DNF\n  (Chrome: https://www.google.com/chrome/ ou o pacote chromium da distro)"
+    if (( MAC )); then
+      verificar || echo -e "\nO que falta, instale você mesmo:\n  macOS:         $BREW\n  $LANGS\n  (Chrome: https://www.google.com/chrome/ ou brew install --cask google-chrome)"
+    else
+    verificar || echo -e "\nO que falta pede sudo; rode você mesmo:\n  Debian/Ubuntu: $APT\n  Fedora:        $DNF\n  $LANGS\n  (Chrome: https://www.google.com/chrome/ ou o pacote chromium da distro)"
+    fi
     ;;
   pasta)
     destino=${2:?informe a pasta work da gravação}

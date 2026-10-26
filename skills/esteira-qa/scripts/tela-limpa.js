@@ -19,6 +19,12 @@ const LIMITE = Number(process.env.LIMITE_DIFERENCA || 0.002)
 ;(async () => {
   const display = process.env.QA_DISPLAY
   if (!display || display === process.env.DISPLAY) throw new Error('defina QA_DISPLAY com o display da rodada')
+  if (display === 'headless') {
+    // Chrome headless (macOS): não há interface do navegador nem tela; o vídeo é o screencast da página,
+    // então o que este teste procura (algo do navegador ou do sistema por cima dela) não tem como entrar.
+    console.log(JSON.stringify({ limpa: true, headless: true, motivo: 'Chrome headless: o vídeo é a própria página' }))
+    process.exit(0)
+  }
   const pasta = path.resolve(process.argv[2] || 'tela-limpa')
   fs.mkdirSync(pasta, { recursive: true })
   const pagina = path.join(pasta, 'pagina.png')

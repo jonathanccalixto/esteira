@@ -64,7 +64,8 @@ comportamento em tela estreita, tema claro/escuro se houver, acessibilidade (ró
 contraste).
 
 **Prazo: 30 min.** Imagens ajudam: se você conseguir gerar um mock (por exemplo, um HTML estático
-renderizado com `google-chrome --headless=new --screenshot=out.png --window-size=1280,800 file://...`),
+renderizado com `google-chrome --headless=new --screenshot=out.png --window-size=1280,800 file://...`;
+no macOS o binário é `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`),
 publique com `$BIN/evidence.sh design <N> plan-$(date +%Y%m%d%H%M) <arquivos>` (se o config tiver
 `evidence_repo`) e use as linhas de imagem que ele imprime.
 

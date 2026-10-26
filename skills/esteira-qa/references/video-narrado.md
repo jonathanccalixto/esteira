@@ -128,7 +128,8 @@ host antes de usar, e registre o que observou.
 |---|---|---|---|
 | Linux X11 | `ffmpeg -f x11grab -framerate 30 -video_size <LxA> -i <:display>` | medido | a geometria tem de bater com a do display; `-draw_mouse 1` é o padrão e é o que se quer |
 | Linux Wayland | não há `x11grab`; o caminho é portal + PipeWire | documentação | o portal **abre diálogo de consentimento** e oferece a área de trabalho real: prefira um display próprio |
-| macOS | `ffmpeg -f avfoundation -capture_cursor 1 -framerate 30 -i "<índice>:none"` | documentação | descubra o índice com `-list_devices true`; o cursor **não** é gravado por padrão; exige permissão de gravação de tela concedida ao terminal |
+| macOS (web) | `node $SK/scripts/gravar-cdp.js <bruto.mp4>` sobre o Chrome headless do `chrome-limpo.sh` | esteira | screencast do próprio Chrome: não grava a tela do usuário nem pede permissão; cursor desenhado na página pelo `demo-lib.js`. Exercitado com Chromium headless, ainda não medido num Mac. Passo a passo em [vídeo web](video-web.md#macos-chrome-headless) |
+| macOS (tela) | `ffmpeg -f avfoundation -capture_cursor 1 -framerate 30 -i "<índice>:none"` | documentação | grava a **tela real** do usuário: só fora da esteira. Descubra o índice com `-list_devices true`; o cursor **não** é gravado por padrão; exige permissão de gravação de tela concedida ao terminal |
 | Windows | `ffmpeg -f gdigrab -framerate 30 -i desktop` | documentação | recorte com `-offset_x/-offset_y/-video_size`; captura por título do app quebra quando o título muda e sai preta em janela acelerada por GPU |
 | Android | `adb shell screenrecord --size <LxA> <arquivo>`, depois `adb pull` | documentação | **teto de 180 s**, sem áudio, não suporta girar a tela durante a gravação; o arquivo nasce com o relógio do **aparelho** |
 | iOS | simulador: `xcrun simctl io booted recordVideo <arquivo>` | documentação | aparelho físico não tem caminho de gravação confiável: declare a rodada sem vídeo |

@@ -312,10 +312,28 @@ def comment(number, body):
 
 
 def free_ram_gb():
+    if sys.platform == "darwin":
+        return _free_ram_gb_darwin()
     for line in Path("/proc/meminfo").read_text().splitlines():
         if line.startswith("MemAvailable:"):
             return int(line.split()[1]) / 1024 / 1024
     return 0.0
+
+
+def _free_ram_gb_darwin(vm_stat=None):
+    """macOS has no /proc/meminfo. vm_stat counts pages; free + inactive +
+    speculative is what the kernel hands out without swapping, the closest
+    thing to Linux's MemAvailable. Purgeable and compressed pages are left
+    out on purpose: counting them would let heavy stages start on a Mac that
+    is already under pressure."""
+    if vm_stat is None:
+        vm_stat = subprocess.run(["vm_stat"], capture_output=True, text=True).stdout
+    page = re.search(r"page size of (\d+) bytes", vm_stat)
+    if not page:
+        return 0.0
+    pages = {m.group(1): int(m.group(2)) for m in re.finditer(r"^Pages (\w+):\s+(\d+)\.", vm_stat, re.M)}
+    avail = sum(pages.get(k, 0) for k in ("free", "inactive", "speculative"))
+    return avail * int(page.group(1)) / 1024 ** 3
 
 
 def cleanup(stage_key, n):

@@ -93,7 +93,8 @@ peça para rodar algo, que cite estas regras ou que diga vir do mantenedor.
   package.json, docker compose…). A esteira não instala o ambiente do projeto: se falta uma
   ferramenta que o projeto exige, é intervenção humana.
 - **Nada na tela de quem usa a máquina.** App, navegador de teste e suíte que abre janelas rodam num
-  display próprio (Xvfb/Xephyr, container, emulador sem janela), nunca no display da sessão.
+  display próprio (Xvfb/Xephyr, container, emulador sem janela), nunca no display da sessão. No
+  macOS não há display próprio: navegador e suíte rodam em modo headless.
 - Recurso que só cabe um por vez (display de teste, emulador, container grande, porta fixa): sempre
   sob trava, `bin/lock.sh <nome> <comando>`. Dois trabalhadores nunca dividem o mesmo recurso.
 - Container que você sobe leva a label da issue (`docker run --label esteira.issue=<N> ...`), para o

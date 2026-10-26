@@ -48,7 +48,9 @@ do PR. Reconfira também ao retomar e ao encerrar a execução em dev.
    dependências: banco, fila, cache, storage, identidade, serviços irmãos.
 2. **Linha de base antes de tudo.** Inventarie listeners (`ss -ltnpH`; sem root
    a coluna de processo vem vazia para sockets de outros usuários, e `lsof` nem
-   os lista, logo não prova porta livre), contêineres e projetos compose
+   os lista, logo não prova porta livre; no macOS, sem `ss`:
+   `netstat -anv -p tcp | grep LISTEN` para o inventário, com a mesma ressalva),
+   contêineres e projetos compose
    (`docker ps -a`, `docker compose ls -a`: parado ainda segura nome e volume)
    e processos do próprio projeto que o usuário deixou rodando. O que existia
    antes é intocável: não pare, reinicie, recrie nem reconfigure. Não aproveite
@@ -129,7 +131,8 @@ do PR. Reconfira também ao retomar e ao encerrar a execução em dev.
    emulador, dispositivo e app que o usuário já tinha abertos são linha de
    base: instância própria, sem reinstalar nem limpar dados neles.
 8. **Confirme o que subiu.** Health/versão, commit, log de inicialização, e o PID
-   dono da porta (`ss -ltnpH 'sport = :<porta>'` deve mostrar o PID anotado).
+   dono da porta (`ss -ltnpH 'sport = :<porta>'` deve mostrar o PID anotado; no
+   macOS, `lsof -nP -iTCP:<porta> -sTCP:LISTEN`, que basta para processo seu).
    Responder 200 na porta esperada não prova que é o seu build. Prove também
    para onde o alvo foi: migração no banco da rodada, conexão no broker da
    rodada, requisição no log do dublê.

@@ -1,7 +1,8 @@
 # Vídeo de cenário web (e de API sobre o palco)
 
 O navegador da gravação é sempre um **Chrome limpo num display próprio** (Xephyr), nunca o
-navegador nem a tela de quem usa a máquina.
+navegador nem a tela de quem usa a máquina. No macOS não há display próprio: o `chrome-limpo.sh`
+sobe o Chrome **headless** e grava `QA_DISPLAY=headless` (veja [macOS](#macos-chrome-headless)).
 
 ## Subir, logar e preparar (fora da câmera)
 
@@ -47,9 +48,27 @@ achado; registre-o e decida se o vídeo mostra a falha.
 Depois: `qv montar ...` e `qv conferir ...`, como em [vídeo narrado](video-narrado.md). Ao fim:
 `$SK/scripts/chrome-limpo.sh descer $G`.
 
+### macOS: Chrome headless
+
+Com `QA_DISPLAY=headless` não existe display para o `x11grab`: quem grava é o próprio Chrome
+(`gravar-cdp.js`, pelo screencast do CDP). Troque **só** as duas linhas do `ffmpeg` da tomada por:
+
+```bash
+node $SK/scripts/gravar-cdp.js $G/work/video/bruto.mp4 2> $G/work/video/gravar.log &
+echo $! > $G/work/video/rec.pid
+while [ ! -e $G/work/video/bruto.mp4.gravando ] && kill -0 $(cat $G/work/video/rec.pid) 2>/dev/null; do sleep 0.2; done
+```
+
+O resto é igual: `qv marco` de início depois disso, o `demo.js`, o marco de parar, `kill -INT` e a
+espera até o processo sair (é nesse momento que ele monta o MP4). O cursor do vídeo é desenhado na
+página pelo `demo-lib.js`, e o `tela-limpa.js` aprova direto (não há interface do navegador para
+cobrir a página). Se o gravador sair antes da hora, veja `gravar.log`.
+
 ## App desktop ou outra interface
 
 Mesmo princípio: um display próprio (Xvfb ou Xephyr) onde o app da worktree roda, `ffmpeg x11grab`
 desse display, `xdotool` para mover o cursor, marcos com `qv marco` em volta das ações. Nunca a tela
-da sessão do usuário. Android: emulador sem janela (`-no-window`) e `adb shell screenrecord`, com a
-âncora visível descrita em [vídeo narrado](video-narrado.md).
+da sessão do usuário. No macOS não há display isolado para app desktop: grave só o que roda no
+Chrome headless e declare o restante da rodada sem vídeo, com o motivo. Android: emulador sem janela
+(`-no-window`) e `adb shell screenrecord`, com a âncora visível descrita em
+[vídeo narrado](video-narrado.md).

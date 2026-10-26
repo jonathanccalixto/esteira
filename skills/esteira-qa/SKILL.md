@@ -68,10 +68,11 @@ WT=$($BIN/worktree.sh qa <N> --detach) && cd "$WT" && gh pr checkout <PR>
   `--label esteira.issue=<N>`. Veja [dev e local](references/ambiente-dev-e-local.md) e
   [dublês](references/dubles-de-integracoes.md) para integrações externas (`scripts/qa_local.py`).
 - **Nada na tela do usuário.** Navegador e app rodam num display próprio:
-  `$SK/scripts/chrome-limpo.sh subir $G <url>` (Xephyr + Chrome limpo por CDP). App desktop: Xvfb ou
-  Xephyr. Android: emulador `-no-window`.
+  `$SK/scripts/chrome-limpo.sh subir $G <url>` (Xephyr + Chrome limpo por CDP; no macOS, Chrome
+  headless, e a tomada muda como em [vídeo web](references/video-web.md#macos-chrome-headless)).
+  App desktop: Xvfb ou Xephyr. Android: emulador `-no-window`.
 - Recurso que só cabe um por vez (o display de gravação, um emulador, uma porta fixa) vai sob
-  `$BIN/lock.sh <nome> bash $G/run.sh`. **Prazo de 40 min por sessão** (`timeout 2400`); vencido, os
+  `$BIN/lock.sh <nome> bash $G/run.sh`. **Prazo de 40 min por sessão** (`$BIN/prazo.sh 2400`); vencido, os
   casos que faltaram ficam `NAO_EXECUTADO` com o motivo.
 - Massa de teste descartável, nunca dados reais do usuário.
 
@@ -186,7 +187,7 @@ cd "$MAIN" && git worktree remove --force "$(git -C "$WT" rev-parse --show-tople
 1. O head do PR ainda é o sha testado? Se não, refaça a rodada (o código mudou).
 2. Se `merge_on_qa` for `false` no config: não faça merge; `worker.py end qa <N>` → **Ready for
    release**, e o mantenedor faz o merge na homologação.
-3. Se for `true`: `timeout 1800 gh pr checks <PR> --watch`. Check vermelho por causa da branch = bug
+3. Se for `true`: `$BIN/prazo.sh 1800 gh pr checks <PR> --watch`. Check vermelho por causa da branch = bug
    (devolva à Dev queue com o log). Vermelho alheio (o mesmo check falha na base): registre no
    relatório e decida pelo que o projeto aceita; na dúvida, não faça merge e deixe para o
    mantenedor. Conflito com a base: `worker.py end qa <N> --to "Dev queue"` ("rebase needed").
