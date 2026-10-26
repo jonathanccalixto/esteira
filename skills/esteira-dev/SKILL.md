@@ -71,7 +71,7 @@ Force-push só com `--force-with-lease` e só na branch da issue.
   pelos testes.
 - **Checkpoint a cada etapa concluída**: commit `[issue-<N>] wip: <o que ficou pronto>` e
   `git push -u origin HEAD`. O squash do merge some com os `wip:`.
-- **Toda espera tem prazo** (suíte: `timeout 1800`). Vencido: registre, decida e siga.
+- **Toda espera tem prazo** (suíte: `$BIN/prazo.sh 1800`). Vencido: registre, decida e siga.
 - Crédito: `Co-authored-by` de quem o plano indica.
 
 ## 4. Commit, push e PR
@@ -86,7 +86,7 @@ Corpo do PR no idioma do config: `Part of #<N>` (nunca `Closes`), resumo, decis�
 plano, como testar, checklist (testes, docs, i18n). PR já existente: só push, mais um comentário no
 PR com o que mudou.
 
-CI: `timeout 1800 gh pr checks <PR> --watch --fail-fast`. Falhou por causa da mudança: corrija e
+CI: `$BIN/prazo.sh 1800 gh pr checks <PR> --watch --fail-fast`. Falhou por causa da mudança: corrija e
 repita. Falhou por algo alheio à issue (o mesmo check falha na base, flake conhecido): registre no
 comentário e siga.
 
