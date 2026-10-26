@@ -91,7 +91,8 @@ A esteira em si precisa só disto:
 | [Claude Code](https://claude.com/claude-code) | os agentes | `curl -fsSL https://claude.ai/install.sh \| bash` |
 | [Herdr](https://github.com/herdrdev/herdr) | os spaces, as abas e o controle dos agentes | binário nas releases do repositório do Herdr |
 | [GitHub CLI](https://cli.github.com) (`gh`) | board, issues, PRs | `sudo apt install gh` / `sudo dnf install gh`, depois `gh auth login` e `gh auth refresh -s project` |
-| git, Python 3.10+, `flock` | scripts | já vêm na maioria das distros Linux (`flock` é do `util-linux`); no macOS, veja [abaixo](#macos) |
+| git, `flock` | scripts | já vêm na maioria das distros Linux (`flock` é do `util-linux`); no macOS, veja [abaixo](#macos) |
+| Python 3.10+ | scripts | `sudo apt install python3` / `sudo dnf install python3`; ou pelo [pyenv](#python-e-node-pelos-versionadores-recomendado) (recomendado) |
 
 **Linux.** A esteira foi feita e testada no Linux (veja o aviso no topo). Distros testadas: Ubuntu
 e derivadas; qualquer distro com as ferramentas acima deve servir.
@@ -99,8 +100,12 @@ e derivadas; qualquer distro com as ferramentas acima deve servir.
 ### macOS
 
 ```bash
-brew install herdr gh python git          # o python3 do Xcode é 3.9; a esteira pede 3.10+
-brew install ffmpeg node uv                # vídeo do QA (opcional)
+brew install herdr gh git
+brew install python                        # o python3 do Xcode é 3.9; a esteira pede 3.10+
+                                           #   ou pelo pyenv (recomendado): veja abaixo
+brew install ffmpeg uv                     # vídeo do QA (opcional)
+brew install node                          # vídeo do QA (opcional): Node 18+
+                                           #   ou pelo nvm (recomendado): veja abaixo
 brew install --cask google-chrome          # se ainda não tiver o Chrome
 ```
 
@@ -142,7 +147,8 @@ o projeto do jeito que o README e o `CLAUDE.md` dele explicam, com o que já est
 máquina. A esteira não instala nada disso.
 
 **Para o vídeo do QA** (opcional, mas é o que torna a homologação rápida): `ffmpeg`, `Xephyr`,
-`xdotool`, `xdpyinfo` (estes três só no Linux), Node 18+, Chrome ou Chromium e `uv`. Depois da instalação,
+`xdotool`, `xdpyinfo` (estes três só no Linux), Node 18+ (pelo pacote do sistema ou pelo
+[nvm](#python-e-node-pelos-versionadores-recomendado)), Chrome ou Chromium e `uv`. Depois da instalação,
 `.claude/skills/esteira-qa/scripts/preparar-video.sh verificar` diz o que falta e
 `preparar-video.sh instalar` baixa os modelos de voz offline. Sem essas ferramentas o QA roda
 normalmente, só que sem vídeo.
