@@ -48,7 +48,11 @@ jobs:
           node-version: "20"
       - name: ferramentas (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update -q && sudo apt-get install -yq ffmpeg xserver-xephyr x11-utils xdotool xvfb
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -yq --no-install-recommends ffmpeg xserver-xephyr x11-utils xdotool xvfb xauth
       - name: ferramentas (macOS)
         if: runner.os == 'macOS'
         run: command -v ffmpeg || brew install ffmpeg
