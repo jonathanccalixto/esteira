@@ -20,7 +20,7 @@ desce () { "$SK/scripts/chrome-limpo.sh" descer "$G" > /dev/null 2>&1; rm -rf "$
 trap desce EXIT
 morre () {
   local logs=
-  for l in "$G"/work/*.log "$V"/*.log; do [[ -s $l ]] && logs+="--- ${l##*/}"$'\n'"$(tail -20 "$l")"$'\n'; done
+  for l in "$tmp"/*.log "$G"/work/*.log "$V"/*.log; do [[ -s $l ]] && logs+="--- ${l##*/}"$'\n'"$(tail -20 "$l")"$'\n'; done
   echo "FALHA $*"; printf '%s' "$logs"
   # Na CI, a falha (com o fim dos logs da rodada) vira anotação: aparece no resumo do PR.
   if [[ -n ${GITHUB_ACTIONS:-} ]]; then
@@ -45,7 +45,7 @@ button{font-size:28px;padding:16px 32px}</style>
 HTML
 
 # 1. Subir, preparar (fora da câmera)
-out=$("$SK/scripts/chrome-limpo.sh" subir "$G" "file://$tmp/pagina.html" 800x600) || morre "chrome-limpo.sh subir"
+out=$("$SK/scripts/chrome-limpo.sh" subir "$G" "file://$tmp/pagina.html" 800x600 2> "$tmp/subir.log") || morre "chrome-limpo.sh subir"
 ok "chrome-limpo.sh subir: $out"
 set -a; source "$G/work/navegador.env"; set +a
 "$SK/scripts/preparar-video.sh" pasta "$G/work" > /dev/null || morre "preparar-video.sh pasta"
