@@ -1,5 +1,13 @@
 # A esteira roda no Linux e no macOS. Este workflow confere os dois, mas só quando alguém manda
 # (Actions > portabilidade > Run workflow): a fila de runners do macOS sozinha leva minutos.
+#
+# TODO: pesquisar como reduzir o tempo dos workflows e/ou dos runners, para voltar a rodar a cada
+# push (meta: no máximo 2 minutos). Pontos de partida, nenhum testado ainda:
+#   - fila do macOS: outros rótulos de runner (Intel x arm64), runner próprio (self-hosted) num Mac;
+#   - apt do vídeo no Linux: cache dos pacotes .deb entre execuções, ou ffmpeg estático;
+#   - Chrome a frio: imagem/container com Chrome e fontes já aquecidos;
+#   - rodar sozinho só o que a mudança afeta (filtro de caminhos por job) e cancelar a execução
+#     anterior da mesma branch (concurrency com cancel-in-progress).
 name: portabilidade
 
 on:
